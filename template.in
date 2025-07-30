@@ -1,0 +1,31 @@
+&CONTROL
+	calculation='scf',
+	outdir='{{outdir}}',
+	prefix='{{prefix}}',
+	pseudo_dir='./pseudos',
+	verbosity='low',
+	tprnfor=.true.,
+	tstress=.true.
+/
+&SYSTEM
+	ibrav = 2,
+	celldm(1) = {{celldm}},
+	nat = 1,
+	ntyp = 1,
+	nbnd = 16,
+	ecutwfc={{ecutwfc}},
+	occupations = 'smearing',
+	smearing = 'cold',
+	degauss = 0.02,
+	input_dft='pbe'
+/
+&ELECTRONS
+	conv_thr=1d-08,
+	mixing_beta=0.7d0
+/
+ATOMIC_SPECIES
+	Cu 63.5460000 Cu.UPF
+ATOMIC_POSITIONS (angstrom)
+Cu  0.0  0.0  0.0
+K_POINTS (automatic)
+	{{kx|default(k)}} {{ky|default(k)}} {{kz|default(k)}} 0 0 0
