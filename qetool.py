@@ -1,8 +1,8 @@
 import subprocess, resource
-import jinja2 as j2
 import os
-import numpy as np
 import time
+import numpy as np
+import jinja2 as j2
 
 testcmd = (
     "echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope && "

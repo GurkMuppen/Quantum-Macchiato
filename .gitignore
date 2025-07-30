@@ -3,3 +3,5 @@
 /test.out
 /testruns
 /tmp
+/.venv
+/__pycache__

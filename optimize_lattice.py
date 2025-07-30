@@ -59,7 +59,4 @@ def find_next_celldm(points=type(pd.DataFrame), convergence=0.005):
     print(points)
     return -1 # EXIT
 
-
-
-
 manual_lattice_optimization(basepath="./tmp/opt/", max_points=10)
