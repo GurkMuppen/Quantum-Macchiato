@@ -1,3 +1,3 @@
 from qetool import *
 
-run_pw_simulation()
+run_simulation()

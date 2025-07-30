@@ -21,4 +21,4 @@ for ecut in ecuts:
         # Define the directory and the filename for the run, to ensure good file management
         filename = f"e{ecut}k{k}"
         params = {'ecutwfc':ecut, 'kx':k, 'ky':k,'kz':k}
-        run_pw_simulation(basepath=batchpath, filename=filename, params=params)
+        run_logged_simulation(basepath=batchpath, filename=filename, params=params)

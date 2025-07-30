@@ -33,7 +33,27 @@ def run_command(command, output_file="test.out"):
     with open(output_file, "w") as outfile:
         subprocess.run(command, shell=True, check=True, stdout=outfile, stderr=subprocess.STDOUT)
 
-def run_pw_simulation(basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
+def run_simulation(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
+    # Use default params if insufficient input:
+    tmp_params = default_params
+    tmp_params.update(params)
+    params = tmp_params
+
+    # Define the directory and the filename for the run, to ensure good file management
+    currentpath = basepath + f"{filename}/"
+    os.makedirs(currentpath, exist_ok=True)
+
+    # Write the correct settings into the template to prepare an input file
+    env = j2.Environment(loader=j2.FileSystemLoader("."))
+    template = env.get_template(template_path)
+    output = template.render(params, outdir=currentpath, prefix=f"{filename}")
+    with open(currentpath + f"{filename}.in", "w") as f:
+        f.write(output)
+
+    # Run the simulation
+    run_logged_command(generate_command(cpus, program=program, input_path=currentpath + f"{filename}.in"), output_file=currentpath + f"{filename}.out", label=f"{filename}")
+                
+def run_logged_simulation(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
     # Use default params if insufficient input:
     tmp_params = default_params
     tmp_params.update(params)
@@ -51,7 +71,7 @@ def run_pw_simulation(basepath="./tmp/", filename="test", params={}, cpus=1, tem
         f.write(output)
 
     # Run the simulation and log the runtime
-    runtime = run_logged_command(generate_command(cpus, "pw.x", input_path=currentpath + f"{filename}.in"), output_file=currentpath + f"{filename}.out", label=f"{filename}")
+    runtime = run_logged_command(generate_command(cpus, program=program, input_path=currentpath + f"{filename}.in"), output_file=currentpath + f"{filename}.out", label=f"{filename}")
     
     # Write the results to the batch output file
     outpath = currentpath + f"{filename}.out"

@@ -1,0 +1,7 @@
+&DOS
+    prefix='{{prefix}}',
+    outdir='{{outdir}}',
+    fildos='LiClO3_dos.dat',
+    emin={{emin | default(-9.0)}},
+    emax={{emax | default(16.0)}
+/

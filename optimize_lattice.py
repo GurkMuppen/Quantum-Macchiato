@@ -15,14 +15,14 @@ def manual_lattice_optimization(basepath, max_points, convergence=0.001, startin
 
     # Run through each of the starting celldms and run simulations, to begin optimization 
     for celldm in starting_celldms:
-        energy = run_pw_simulation(basepath, filename=f'start{celldm}', params={'celldm':celldm}, cpus=4)
+        energy = run_logged_simulation(basepath, filename=f'start{celldm}', params={'celldm':celldm}, cpus=4)
         new_row = pd.DataFrame({'celldm':[celldm], 'energy':[energy]})
         points = pd.concat([points, new_row], ignore_index=True).sort_values('celldm')
 
     next_celldm = find_next_celldm(points, convergence)
 
     while (next_celldm > 0 and len(points) <= max_points):
-        energy = run_pw_simulation(basepath, filename=f'point{next_celldm}', params={'celldm':next_celldm}, cpus=4)
+        energy = run_logged_simulation(basepath, filename=f'point{next_celldm}', params={'celldm':next_celldm}, cpus=4)
         new_row = pd.DataFrame({'celldm':[next_celldm], 'energy':[energy]})
         points = pd.concat([points, new_row], ignore_index=True).sort_values('celldm')
         next_celldm = find_next_celldm(points, convergence)

@@ -1,0 +1,28 @@
+&CONTROL
+	calculation='nscf',
+	outdir='{{outdir}}',
+	prefix='{{prefix}}',
+	pseudo_dir='./pseudos',
+	verbosity='low',
+	tprnfor=.true.,
+	tstress=.true.
+/
+&SYSTEM
+	ibrav = {{ibrav}},
+	celldm(1) = {{celldm}},
+	nat = {{nat}},
+	ntyp = {{ntyp}},
+	nbnd = {{nbnd}},
+	ecutwfc={{ecutwfc}},
+	occupations = 'tetrahedra',
+/
+&ELECTRONS
+	conv_thr=1d-08,
+	mixing_beta=0.7d0
+/
+ATOMIC_SPECIES
+{{species}}
+ATOMIC_POSITIONS (angstrom)
+{{positions}}
+K_POINTS (automatic)
+	{{kx|default(k)}} {{ky|default(k)}} {{kz|default(k)}} 0 0 0
