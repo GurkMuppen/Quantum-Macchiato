@@ -24,8 +24,8 @@
 	mixing_beta=0.7d0
 /
 ATOMIC_SPECIES
-	Cu 63.5460000 Cu.UPF
+{{species}}
 ATOMIC_POSITIONS (angstrom)
-Cu  0.0  0.0  0.0
+{{positions}}
 K_POINTS (automatic)
 	{{kx|default(k)}} {{ky|default(k)}} {{kz|default(k)}} 0 0 0
