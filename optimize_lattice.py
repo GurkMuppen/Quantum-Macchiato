@@ -26,6 +26,9 @@ def manual_lattice_optimization(basepath, max_points, convergence=0.001, startin
         new_row = pd.DataFrame({'celldm':[next_celldm], 'energy':[energy]})
         points = pd.concat([points, new_row], ignore_index=True).sort_values('celldm')
         next_celldm = find_next_celldm(points, convergence)
+    if (next_celldm < 0):
+        return float(points.loc[points['energy'].idxmin()]['celldm'])
+    return -1 # NOT CONVERGED
 
         
 def find_next_celldm(points=type(pd.DataFrame), convergence=0.005):
