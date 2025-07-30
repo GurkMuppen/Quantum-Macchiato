@@ -15,7 +15,7 @@
 	nbnd = 16,
 	ecutwfc={{ecutwfc}},
 	occupations = 'smearing',
-	smearing = 'cold',
+	smearing = 'gauss',
 	degauss = 0.02,
 	input_dft='pbe'
 /
@@ -24,7 +24,7 @@
 	mixing_beta=0.7d0
 /
 ATOMIC_SPECIES
-	Cu 63.5460000 Cu.UPF
+Cu 63.5460000 Cu.UPF
 ATOMIC_POSITIONS (angstrom)
 Cu  0.0  0.0  0.0
 K_POINTS (automatic)

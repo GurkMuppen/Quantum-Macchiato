@@ -14,5 +14,3 @@ with open("test.out", "w") as outfile:
     process.wait()
 
 print("Hello World!")
-
-print("something is off...?")

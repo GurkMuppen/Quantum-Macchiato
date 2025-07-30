@@ -33,7 +33,7 @@ def run_command(command, output_file="test.out"):
     with open(output_file, "w") as outfile:
         subprocess.run(command, shell=True, check=True, stdout=outfile, stderr=subprocess.STDOUT)
 
-def run_pw_simulation(basepath="./tmp/", filename="test", params={}, cpus=1):
+def run_pw_simulation(basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
     # Use default params if insufficient input:
     tmp_params = default_params
     tmp_params.update(params)
@@ -45,7 +45,7 @@ def run_pw_simulation(basepath="./tmp/", filename="test", params={}, cpus=1):
 
     # Write the correct settings into the template to prepare an input file
     env = j2.Environment(loader=j2.FileSystemLoader("."))
-    template = env.get_template("template.in")
+    template = env.get_template(template_path)
     output = template.render(params, outdir=currentpath, prefix=f"{filename}")
     with open(currentpath + f"{filename}.in", "w") as f:
         f.write(output)
