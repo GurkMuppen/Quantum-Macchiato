@@ -1,6 +1,7 @@
 import subprocess, resource
 import os
 import time
+import pandas as pd
 import numpy as np
 import jinja2 as j2
 
@@ -10,6 +11,34 @@ testcmd = (
     "conda run -n qespresso mpirun -np 1 pw.x -in test.in"
 )
 default_params = {'celldm':6.765, 'ecutwfc':40, 'k':6}
+
+class atom_position:
+    atom : str
+    x : float
+    y : float
+    z : float
+
+    def __init__(self, atom, x, y, z):
+        self.atom = atom
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __str__(self):
+        return f"{self.atom} {self.x} {self.y} {self.z}"
+
+class structure:
+    """A QE-tool structure"""
+    ibrav : int 
+    celldm : float
+    species : pd.DataFrame
+    positions : list[atom_position]
+
+    def __init__(self, species, positions):
+        self.species = species
+        self.positions = positions
+
+    
 
 
 def generate_command(cpus, program="pw.x", input_path="test.in", threads=1):
@@ -27,7 +56,6 @@ def run_logged_command(command, output_file="test.out", label=""):
     runtime = usageend - usagestart
     print(f"Simulation {label} completed with a runtime of: {runtime:.2f} seconds")
     return runtime
-
 
 def run_command(command, output_file="test.out"):
     with open(output_file, "w") as outfile:
