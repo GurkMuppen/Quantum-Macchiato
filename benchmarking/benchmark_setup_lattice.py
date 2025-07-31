@@ -25,4 +25,4 @@ for i, params in enumerate(param_groups):
         # Define the directory and the filename for the run, to ensure good file management
         filename = f"e{params['ecutwfc']}k{params['k']}a{celldm}"
         params.update({'celldm':celldm})
-        run_logged_simulation(basepath=batchpath, filename=filename, params=params, cpus=4)
+        simulate_from_template_logged(basepath=batchpath, filename=filename, params=params, cpus=4)

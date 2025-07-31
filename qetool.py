@@ -1,9 +1,10 @@
-import subprocess, resource
+import subprocess
 import os
 import time
 import pandas as pd
 import numpy as np
 import jinja2 as j2
+from pseudo_tool import *
 
 testcmd = (
     "echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope && "
@@ -18,7 +19,7 @@ class atom_position:
     y : float
     z : float
 
-    def __init__(self, atom, x, y, z):
+    def __init__(self, atom : str, x : float, y : float, z : float):
         self.atom = atom
         self.x = x
         self.y = y
@@ -34,11 +35,40 @@ class structure:
     species : pd.DataFrame
     positions : list[atom_position]
 
-    def __init__(self, species, positions):
-        self.species = species
+    def __init__(self, positions : atom_position):
+        species = []
+        for position in positions:
+            if position.atom not in species:
+                species.append(position.atom)
+        self.species = get_pseudo_data(species)
         self.positions = positions
 
+    def positions_to_string(self):
+        output = []
+        for position in self.positions:
+            output.append(str(position))
+        return "\n".join(output)
     
+    def get_nbnd(self):
+        sum = 0
+        for position in self.positions:
+            sum += self.species.loc[position.atom, 'n_valance']
+        return sum
+
+    def to_params(self):
+        output = {
+            "nat":len(self.positions),
+            "ntyp":len(self.species),
+            "nbnd":int(self.get_nbnd()) + 4, # 4 IF METAL, THIS HAS TO BE ADAPTED,
+            "species":define_species(self.species),
+            "positions": self.positions_to_string()
+            }
+        if not np.isnan(self.ibrav):
+            output.update({"ibrav":self.ibrav})
+        else:
+            output.update({"ibrav":2})
+        return output
+
 
 
 def generate_command(cpus, program="pw.x", input_path="test.in", threads=1):
@@ -61,7 +91,9 @@ def run_command(command, output_file="test.out"):
     with open(output_file, "w") as outfile:
         subprocess.run(command, shell=True, check=True, stdout=outfile, stderr=subprocess.STDOUT)
 
-def run_simulation(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
+def simulate_from_template(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
+    """Runs a simulation using the selected program and by inputing a rendered inputfile from the template with added params"""
+    
     # Use default params if insufficient input:
     tmp_params = default_params
     tmp_params.update(params)
@@ -80,8 +112,11 @@ def run_simulation(program="pw.x", basepath="./tmp/", filename="test", params={}
 
     # Run the simulation
     run_logged_command(generate_command(cpus, program=program, input_path=currentpath + f"{filename}.in"), output_file=currentpath + f"{filename}.out", label=f"{filename}")
-                
-def run_logged_simulation(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
+
+def simulate_from_template_logged(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
+    """Runs a simulation using the selected program and by inputing a rendered input file from the template with the selected params. \n
+    Logs results in an file under the basepath named "results.final" 
+    """
     # Use default params if insufficient input:
     tmp_params = default_params
     tmp_params.update(params)
@@ -110,3 +145,7 @@ def run_logged_simulation(program="pw.x", basepath="./tmp/", filename="test", pa
                 if "!    total energy              =" in line:
                     outfile.write(f"{line[33:-4].strip()}\n")
                     return float(line[33:-4].strip())
+
+def simulate_structure(structure : structure, program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/standard.in"):
+    params = params.update(structure.to_params())
+    simulate_from_template(program, basepath, filename, params, cpus, template_path)

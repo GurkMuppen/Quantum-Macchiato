@@ -22,4 +22,4 @@ for i, ecut in enumerate(ecuts):
         # Define the directory and the filename for the run, to ensure good file management
         filename = f"e{ecuts[i]}k{kpoints[i]}-cpu{cpu}"
         params = {'ecutwfc':ecuts[i], 'kx':kpoints[i], 'ky':kpoints[i],'kz':kpoints[i]}
-        run_logged_simulation(basepath=batchpath, filename=filename, params=params, cpus=cpu)
+        simulate_from_template_logged(basepath=batchpath, filename=filename, params=params, cpus=cpu)
