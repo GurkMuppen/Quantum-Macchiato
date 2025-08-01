@@ -91,6 +91,25 @@ def run_command(command, output_file="test.out"):
     with open(output_file, "w") as outfile:
         subprocess.run(command, shell=True, check=True, stdout=outfile, stderr=subprocess.STDOUT)
 
+def render_input_file(basepath="./tmp/", filename="test", params={}, template_path="./input_templates/test.in"):
+    # Use default params if insufficient input:
+    tmp_params = default_params
+    tmp_params.update(params)
+    params = tmp_params
+
+    # Define the directory and the filename for the run, to ensure good file management
+    currentpath = basepath + f"{filename}/"
+    os.makedirs(currentpath, exist_ok=True)
+
+    # Write the correct settings into the template to prepare an input file
+    env = j2.Environment(loader=j2.FileSystemLoader("."))
+    template = env.get_template(template_path)
+    output = template.render(params, outdir=currentpath, prefix=f"{filename}")
+    with open(currentpath + f"{filename}.in", "w") as f:
+        f.write(output)
+    
+    return f"{currentpath}{filename}.in"
+
 def simulate_from_template(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
     """Runs a simulation using the selected program and by inputing a rendered inputfile from the template with added params"""
     
