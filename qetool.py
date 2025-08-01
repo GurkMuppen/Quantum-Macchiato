@@ -98,7 +98,6 @@ def simulate_from_template(program="pw.x", basepath="./tmp/", filename="test", p
     tmp_params = default_params
     tmp_params.update(params)
     params = tmp_params
-
     # Define the directory and the filename for the run, to ensure good file management
     currentpath = basepath + f"{filename}/"
     os.makedirs(currentpath, exist_ok=True)
@@ -147,5 +146,5 @@ def simulate_from_template_logged(program="pw.x", basepath="./tmp/", filename="t
                     return float(line[33:-4].strip())
 
 def simulate_structure(structure : structure, program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/standard.in"):
-    params = params.update(structure.to_params())
-    simulate_from_template(program, basepath, filename, params, cpus, template_path)
+    params.update(structure.to_params())
+    simulate_from_template(program=program, basepath=basepath, filename=filename, params=params, cpus=cpus, template_path=template_path)
