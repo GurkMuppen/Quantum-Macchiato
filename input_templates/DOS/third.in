@@ -1,7 +1,7 @@
 &DOS
     prefix='{{prefix}}',
     outdir='{{outdir}}',
-    fildos='{{fildos}}',
+    fildos='{{outdir}}dos.dat',
     emin={{emin | default(-9.0)}},
     emax={{emax | default(16.0)}}
 /

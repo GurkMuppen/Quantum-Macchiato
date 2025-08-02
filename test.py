@@ -6,4 +6,4 @@ lithium = structure([atom_position("Cu", 0, 0, 0)])
 
 lithium.ibrav = 2
 
-run_dos_triad(lithium, basepath="./testruns/dos_copper/", filename="copper", cpus=4)
+run_dos_triad(lithium, basepath="./testruns/dos_copper/", prefix="copper", cpus=4)

@@ -71,16 +71,33 @@ class structure:
 
 class path_object:
     """ A container for all paths related used by QE-tool functions"""
+
     basepath : str 
     """ The folder for all inputs & outputs """
+
     filename : str
     """ The filename used for both the .in & .out file for the calculation """
-    prefix : str
-    """ Used by Quantum Espresso while saving data in a subfolder under basepath """
+
+    prefix : str 
+    """ Common prefix used in segmented calculations"""
+
     template_path : str
     """ External path to the template to be rendered """
+
     input_file : str
     """ Local path to the rendered input file to be calculated"""
+    
+    def __init__(self, basepath : str, filename : str, prefix : str = "", template_path : str = ""):
+        self.basepath = basepath
+        self.filename = filename
+        if prefix == "":
+            self.prefix = filename
+        self.template_path = template_path
+
+    def render_input_file(self, params : dict, structure : structure = None):
+        self.input_file = render_template(structure=structure, basepath=self.basepath, filename=self.filename, prefix=self.prefix, params=params, template_path=self.template_path)
+        
+
 
 def generate_command(cpus, program="pw.x", input_path="test.in", threads=1):
     return (
@@ -102,9 +119,11 @@ def run_command(command, output_file="test.out"):
     with open(output_file, "w") as outfile:
         subprocess.run(command, shell=True, check=True, stdout=outfile, stderr=subprocess.STDOUT)
 
-def render_input_file(basepath="./tmp/", filename="test", params={}, template_path="./input_templates/test.in"):
-    # Use default params if insufficient input:
+def render_template(structure : structure = None, basepath="./tmp/", filename="test", prefix="",params={}, template_path="./input_templates/test.in"):
+    # Start with default params:
     tmp_params = default_params
+    
+    # Update params with inputted ones
     tmp_params.update(params)
     params = tmp_params
 
@@ -115,32 +134,25 @@ def render_input_file(basepath="./tmp/", filename="test", params={}, template_pa
     # Write the correct settings into the template to prepare an input file
     env = j2.Environment(loader=j2.FileSystemLoader("."))
     template = env.get_template(template_path)
-    output = template.render(params, outdir=currentpath, prefix=f"{filename}")
+    output = template.render(params, outdir=currentpath, prefix=f"{prefix if prefix != "" else filename}")
     with open(currentpath + f"{filename}.in", "w") as f:
         f.write(output)
     
     return f"{currentpath}{filename}.in"
 
-def simulate_from_template(program="pw.x", basepath="./tmp/", filename="test", prefix="test", params={}, cpus=1, template_path="./input_templates/test.in"):
+def simulate_from_template(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in", path_obj : path_object = None):
     """Runs a simulation using the selected program and by inputing a rendered inputfile from the template with added params"""
     
-    # Use default params if insufficient input:
-    tmp_params = default_params
-    tmp_params.update(params)
-    params = tmp_params
-    # Define the directory and the filename for the run, to ensure good file management
-    currentpath = basepath
-    os.makedirs(currentpath, exist_ok=True)
+    # Use paths derived from the path_object if exists
+    if path_obj != None :
+        basepath = path_obj.basepath
+        filename = path_obj.filename
+        template_path = path_obj.template_path
 
-    # Write the correct settings into the template to prepare an input file
-    env = j2.Environment(loader=j2.FileSystemLoader("."), keep_trailing_newline=True)
-    template = env.get_template(template_path)
-    output = template.render(params, outdir=currentpath, prefix=prefix)
-    with open(currentpath + f"{filename}.in", "w") as f:
-        f.write(output)
+    input_file = render_template(basepath=basepath, filename=filename, params=params, template_path=template_path)
 
     # Run the simulation
-    run_logged_command(generate_command(cpus, program=program, input_path=currentpath + f"{filename}.in"), output_file=currentpath + f"{filename}.out", label=f"{filename}")
+    run_logged_command(generate_command(cpus, program=program, input_path=input_file), output_file=basepath + f"{filename}.out", label=f"{filename}")
 
 def simulate_from_template_logged(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
     """Runs a simulation using the selected program and by inputing a rendered input file from the template with the selected params. \n
@@ -175,6 +187,5 @@ def simulate_from_template_logged(program="pw.x", basepath="./tmp/", filename="t
                     outfile.write(f"{line[33:-4].strip()}\n")
                     return float(line[33:-4].strip())
 
-def simulate_structure(structure : structure, program="pw.x", basepath="./tmp/", filename="test", prefix="test", params={}, cpus=1, template_path="./input_templates/standard.in"):
-    params.update(structure.to_params())
-    simulate_from_template(program=program, basepath=basepath, filename=filename, prefix=prefix, params=params, cpus=cpus, template_path=template_path)
+def run_simulation(path_obj : path_object, program="pw.x", cpus=1):
+    run_logged_command(generate_command(cpus, program=program, input_path=path_obj.currentpath + f"{path_obj.filename}.in"), output_file=path_obj.currentpath + f"{path_obj.filename}.out", label=f"{path_obj.filename}")
