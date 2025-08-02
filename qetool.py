@@ -69,7 +69,18 @@ class structure:
             output.update({"ibrav":2})
         return output
 
-
+class path_object:
+    """ A container for all paths related used by QE-tool functions"""
+    basepath : str 
+    """ The folder for all inputs & outputs """
+    filename : str
+    """ The filename used for both the .in & .out file for the calculation """
+    prefix : str
+    """ Used by Quantum Espresso while saving data in a subfolder under basepath """
+    template_path : str
+    """ External path to the template to be rendered """
+    input_file : str
+    """ Local path to the rendered input file to be calculated"""
 
 def generate_command(cpus, program="pw.x", input_path="test.in", threads=1):
     return (
@@ -98,7 +109,7 @@ def render_input_file(basepath="./tmp/", filename="test", params={}, template_pa
     params = tmp_params
 
     # Define the directory and the filename for the run, to ensure good file management
-    currentpath = basepath + f"{filename}/"
+    currentpath = basepath
     os.makedirs(currentpath, exist_ok=True)
 
     # Write the correct settings into the template to prepare an input file
