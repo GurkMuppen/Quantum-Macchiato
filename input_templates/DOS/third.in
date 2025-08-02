@@ -1,7 +1,7 @@
 &DOS
     prefix='{{prefix}}',
     outdir='{{outdir}}',
-    fildos='LiClO3_dos.dat',
+    fildos='{{fildos}}',
     emin={{emin | default(-9.0)}},
-    emax={{emax | default(16.0)}
+    emax={{emax | default(16.0)}}
 /

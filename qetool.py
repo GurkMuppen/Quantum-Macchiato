@@ -110,7 +110,7 @@ def render_input_file(basepath="./tmp/", filename="test", params={}, template_pa
     
     return f"{currentpath}{filename}.in"
 
-def simulate_from_template(program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/test.in"):
+def simulate_from_template(program="pw.x", basepath="./tmp/", filename="test", prefix="test", params={}, cpus=1, template_path="./input_templates/test.in"):
     """Runs a simulation using the selected program and by inputing a rendered inputfile from the template with added params"""
     
     # Use default params if insufficient input:
@@ -118,13 +118,13 @@ def simulate_from_template(program="pw.x", basepath="./tmp/", filename="test", p
     tmp_params.update(params)
     params = tmp_params
     # Define the directory and the filename for the run, to ensure good file management
-    currentpath = basepath + f"{filename}/"
+    currentpath = basepath
     os.makedirs(currentpath, exist_ok=True)
 
     # Write the correct settings into the template to prepare an input file
-    env = j2.Environment(loader=j2.FileSystemLoader("."))
+    env = j2.Environment(loader=j2.FileSystemLoader("."), keep_trailing_newline=True)
     template = env.get_template(template_path)
-    output = template.render(params, outdir=currentpath, prefix=f"{filename}")
+    output = template.render(params, outdir=currentpath, prefix=prefix)
     with open(currentpath + f"{filename}.in", "w") as f:
         f.write(output)
 
@@ -164,6 +164,6 @@ def simulate_from_template_logged(program="pw.x", basepath="./tmp/", filename="t
                     outfile.write(f"{line[33:-4].strip()}\n")
                     return float(line[33:-4].strip())
 
-def simulate_structure(structure : structure, program="pw.x", basepath="./tmp/", filename="test", params={}, cpus=1, template_path="./input_templates/standard.in"):
+def simulate_structure(structure : structure, program="pw.x", basepath="./tmp/", filename="test", prefix="test", params={}, cpus=1, template_path="./input_templates/standard.in"):
     params.update(structure.to_params())
-    simulate_from_template(program=program, basepath=basepath, filename=filename, params=params, cpus=cpus, template_path=template_path)
+    simulate_from_template(program=program, basepath=basepath, filename=filename, prefix=prefix, params=params, cpus=cpus, template_path=template_path)
