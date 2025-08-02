@@ -92,6 +92,8 @@ class path_object:
         self.filename = filename
         if prefix == "":
             self.prefix = filename
+        else :
+            self.prefix = prefix
         self.template_path = template_path
 
     def render_input_file(self, params : dict, structure : structure = None):
@@ -123,6 +125,9 @@ def render_template(structure : structure = None, basepath="./tmp/", filename="t
     # Start with default params:
     tmp_params = default_params
     
+    if structure != None :
+        tmp_params.update(structure.to_params())
+
     # Update params with inputted ones
     tmp_params.update(params)
     params = tmp_params
@@ -132,9 +137,9 @@ def render_template(structure : structure = None, basepath="./tmp/", filename="t
     os.makedirs(currentpath, exist_ok=True)
 
     # Write the correct settings into the template to prepare an input file
-    env = j2.Environment(loader=j2.FileSystemLoader("."))
+    env = j2.Environment(loader=j2.FileSystemLoader("."), keep_trailing_newline=True)
     template = env.get_template(template_path)
-    output = template.render(params, outdir=currentpath, prefix=f"{prefix if prefix != "" else filename}")
+    output = template.render(params, outdir=currentpath, prefix=prefix if prefix != "" else filename)
     with open(currentpath + f"{filename}.in", "w") as f:
         f.write(output)
     
@@ -188,4 +193,4 @@ def simulate_from_template_logged(program="pw.x", basepath="./tmp/", filename="t
                     return float(line[33:-4].strip())
 
 def run_simulation(path_obj : path_object, program="pw.x", cpus=1):
-    run_logged_command(generate_command(cpus, program=program, input_path=path_obj.currentpath + f"{path_obj.filename}.in"), output_file=path_obj.currentpath + f"{path_obj.filename}.out", label=f"{path_obj.filename}")
+    run_logged_command(generate_command(cpus, program=program, input_path=path_obj.basepath + f"{path_obj.filename}.in"), output_file=path_obj.basepath + f"{path_obj.filename}.out", label=f"{path_obj.filename}")

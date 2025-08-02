@@ -32,4 +32,4 @@ def run_dos_triad(structure : structure, basepath="./testruns/", prefix="filenam
     path = path_object(basepath, f"{prefix}_third", prefix, f"{templates}third.in")
     path.input_file = path.render_input_file(tmp_params, structure)
 
-    run_simulation(path, "pw.x", 4)
+    run_simulation(path, "dos.x", 4)
