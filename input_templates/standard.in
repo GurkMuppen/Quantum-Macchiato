@@ -25,7 +25,7 @@
 /
 ATOMIC_SPECIES
 {{species}}
-ATOMIC_POSITIONS (angstrom)
+ATOMIC_POSITIONS ({{position_unit|default("angstrom")}})
 {{positions}}
 K_POINTS (automatic)
 	{{kx|default(k)}} {{ky|default(k)}} {{kz|default(k)}} 0 0 0

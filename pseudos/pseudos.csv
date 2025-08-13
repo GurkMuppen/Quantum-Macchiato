@@ -1,3 +1,5 @@
 species;weight;min_ecut;n_valance;path
 Li;6.941;50.0;4;Li.UPF
 Cu;63.546;45.0;6;Cu.UPF
+Cl;35.453;45.0;6;Cl.UPF
+O;15.999;47.0;4;O.UPF

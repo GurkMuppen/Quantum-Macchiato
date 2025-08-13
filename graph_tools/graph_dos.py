@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from qetool import *
+from dos_tool import *
 
 # This script was partially written by Dante Wigren, my project partner during the programme Rays - for excellence
 
@@ -10,19 +11,9 @@ def dos_to_graph(path_obj : path_object, structure_name, show = True, save = Tru
     energy = data[:, 0]
     dos = data[:, 1]
 
-    fermi_level = 0
-    bandgap = 0 
-    with open(f"{path_obj.basepath}dos.dat") as file:
-        first_line = file.readline()
-        fermi_level = float(first_line[42:-3])
-        for line in file :
-            if line[0] == "#" : continue
-            if float(line[:7]) < fermi_level : continue
-            if float(line[10:20]) == 0 :
-                bandgap += 0.01
-            else :
-                break
-
+    fermi_level = get_fermi_level(f"{path_obj.basepath}dos.dat")
+    bandgap = get_bandgap(f"{path_obj.basepath}dos.dat", fermi_level)
+    
     # Select begining and enpoints in data for graph
     min_energy = -np.inf
     max_energy = np.inf
@@ -41,7 +32,7 @@ def dos_to_graph(path_obj : path_object, structure_name, show = True, save = Tru
     plt.ylabel("Density (states/eV)")
     plt.title(f"Density of States in {structure_name}")
     plt.margins(y=0)
-    plt.plot([], [], "", color="none", label=f"Bandgap:     {bandgap} eV")
+    plt.plot([], [], "", color="none", label=f"Bandgap:     {bandgap:.2f} eV")
     plt.legend()
     plt.tight_layout()
 

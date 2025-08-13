@@ -57,6 +57,8 @@ class structure:
 
     def to_params(self):
         output = {
+            "ibrav":self.ibrav,
+            "celldm":self.celldm,
             "nat":len(self.positions),
             "ntyp":len(self.species),
             "nbnd":int(self.get_nbnd()) + 4, # 4 IF METAL, THIS HAS TO BE ADAPTED,

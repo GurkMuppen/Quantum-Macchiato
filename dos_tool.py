@@ -41,3 +41,22 @@ def run_dos_triad(structure : structure, path : path_object, globalparams: dict 
     path.input_file = path.render_input_file(tmp_params, structure)
 
     run_simulation(path, "dos.x", cpus)
+
+def get_fermi_level(dos_path):
+    with open(dos_path) as file:
+        first_line = file.readline()
+        fermi_level = float(first_line[42:-3])
+        return fermi_level
+
+def get_bandgap(dos_path, fermi_level):
+    bandgap = 0
+    # Find the correct bandgap
+    with open(dos_path) as file:
+        for line in file :
+            if line[0] == "#" : continue
+            if float(line[10:20]) == 0 :
+                bandgap += 1
+            elif float(line[:7]) < fermi_level: 
+                bandgap = 0
+                continue
+    return float(bandgap * 0.01)
