@@ -32,7 +32,7 @@ class iterative_solver :
             if graph_result :
                 lattice_optimization_to_graph(points)
             return float(points.loc[points['energy'].idxmin()]['celldm'])
-        print("Simulation did not convert")
+        print("Simulation did not converge")
     
 
 def manual_lattice_optimization(basepath, max_points, convergence=0.001, starting_celldms=[6.0, 7.0]):
