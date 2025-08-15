@@ -1,6 +1,39 @@
-from qetool import *
+from qmacchiato import *
 import numpy as np
 import pandas as pd
+from graph_tools import *
+
+
+class iterative_solver :
+    def optimize_structure(structure, basepath="./tmp/", max_points=15, convergence=0.001, starting_celldms=[6.0, 7.0, 8.0], graph_result=False):
+        points = pd.DataFrame({'celldms':[], 'energy':[]})
+
+        for starting_celldm in starting_celldms:
+            path = path_object(basepath=f"{basepath}opt/{starting_celldm}/", prefix=f"{starting_celldm}", template_path="./input_templates/standard.in")
+            path.render_input_file({"celldm":starting_celldm}, structure)
+
+            run_simulation(path, "pw.x", 4)
+
+            new_row = pd.DataFrame({'celldm':[starting_celldm], 'energy':[path.read_output_energy()]})
+            points = pd.concat([points, new_row], ignore_index=True).sort_values('celldm')
+
+        next_celldm = find_next_celldm(points, convergence)
+
+        while (next_celldm > 0 and len(points) <= max_points):
+            path = path_object(basepath=f"{basepath}opt/{next_celldm}/", prefix=f"{next_celldm}", template_path="./input_templates/standard.in")
+            path.render_input_file({"celldm":next_celldm}, structure)
+
+            run_simulation(path, "pw.x", 4)
+
+            new_row = pd.DataFrame({'celldm':[next_celldm], 'energy':[path.read_output_energy()]})
+            points = pd.concat([points, new_row], ignore_index=True).sort_values('celldm')
+
+        if (next_celldm < 0):
+            if graph_result :
+                lattice_optimization_to_graph(points)
+            return float(points.loc[points['energy'].idxmin()]['celldm'])
+        print("Simulation did not convert")
+    
 
 def manual_lattice_optimization(basepath, max_points, convergence=0.001, starting_celldms=[6.0, 7.0]):
     slope_left = -np.inf

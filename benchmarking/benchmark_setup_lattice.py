@@ -1,6 +1,6 @@
 # Run through several simulations to log runtime and accuracy, to check for convergence
 
-from qetool import *
+from qmacchiato import *
 import jinja2 as j2
 import os
 import numpy as np

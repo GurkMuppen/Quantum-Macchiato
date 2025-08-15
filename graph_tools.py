@@ -1,11 +1,20 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-from qetool import *
+from qmacchiato import *
 from dos_tool import *
 
-# This script was partially written by Dante Wigren, my project partner during the programme Rays - for excellence
+def lattice_optimization_to_graph(data : pd.DataFrame) :
+    plt.plot(data['celldm'], data['energy'])
 
+    plt.title("Setup benchmark of calculation for lattice constant")
+    plt.xlabel("celldm (Bohr)")
+    plt.ylabel("Total energy (Ry)")
+
+    plt.show()
+    
 def dos_to_graph(path_obj : path_object, structure_name, show = True, save = True) :
+    # This script was partially written by Dante Wigren, my project partner during the programme Rays - for excellence
 
     data = np.loadtxt(f"{path_obj.basepath}dos.dat")
     energy = data[:, 0]

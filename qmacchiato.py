@@ -29,19 +29,23 @@ class atom_position:
         return f"{self.atom} {self.x} {self.y} {self.z}"
 
 class structure:
-    """A QE-tool structure"""
+    """A Quantum Espresso structure"""
     ibrav : int 
     celldm : float
     species : pd.DataFrame
     positions : list[atom_position]
 
-    def __init__(self, positions : atom_position):
+    total_energy : float = np.inf # Simulated energy, is set after simulation
+
+    def __init__(self, positions : atom_position, celldm, ibrav=2):
         species = []
         for position in positions:
             if position.atom not in species:
                 species.append(position.atom)
         self.species = get_pseudo_data(species)
         self.positions = positions
+        self.celldm = celldm
+        self.ibrav = ibrav
 
     def positions_to_string(self):
         output = []
@@ -72,7 +76,7 @@ class structure:
         return output
 
 class path_object:
-    """ A container for all paths related used by QE-tool functions"""
+    """ A container for all paths used by Quantum Macchiato functions """
 
     basepath : str 
     """ The folder for all inputs & outputs """
@@ -100,8 +104,13 @@ class path_object:
 
     def render_input_file(self, params : dict, structure : structure = None):
         self.input_file = render_template(structure=structure, basepath=self.basepath, filename=self.filename, prefix=self.prefix, params=params, template_path=self.template_path)
-        
 
+    def read_output_energy(path) :
+        with open(f"{path.basepath}{path.filename}.out", "r") as f:
+            for line in f:
+                if "!    total energy              =" in line:
+                    return float(line[33:-4].strip())
+        raise Exception(f"NO ENERGY WAS FOUND IN {path.basepath}{path.filename}.out")
 
 def generate_command(cpus, program="pw.x", input_path="test.in", threads=1):
     return (

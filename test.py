@@ -1,7 +1,7 @@
-from qetool import *
+from qmacchiato import *
 from pseudo_tool import *
 from dos_tool import *
-from graph_tools.graph_dos import *
+from graph_tools import *
 
 lithium = structure([atom_position("Cu", 0, 0, 0)])
 

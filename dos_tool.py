@@ -1,4 +1,4 @@
-from qetool import *
+from qmacchiato import *
 
 def run_dos_triad(structure : structure, path : path_object, globalparams: dict = {}, localparams:list[dict] = [{},{},{}], cpus=4):
     """ Runs three qespresso simulations in series with a fixed structure.
