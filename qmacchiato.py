@@ -138,6 +138,7 @@ def render_template(structure : structure = None, basepath="./tmp/", filename="t
     
     if structure != None :
         tmp_params.update(structure.to_params())
+        tmp_params.update(get_optimal_ecuts(structure.species.index, 1.0))
 
     # Update params with inputted ones
     tmp_params.update(params)

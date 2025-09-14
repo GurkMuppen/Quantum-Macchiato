@@ -14,10 +14,11 @@
 	ntyp = {{ntyp}},
 	nbnd = {{nbnd}},
 	ecutwfc={{ecutwfc}},
+	ecutrho={{ecutrho}},
 	occupations = 'smearing',
 	smearing = 'gauss',
 	degauss = 0.02,
-	input_dft='pbe'
+	input_dft='{{input_dft|default("pbe")}}'
 /
 &ELECTRONS
 	conv_thr=1d-08,

@@ -59,4 +59,6 @@ def get_bandgap(dos_path, fermi_level):
             elif float(line[:7]) < fermi_level: 
                 bandgap = 0
                 continue
+            else :
+                break
     return float(bandgap * 0.01)

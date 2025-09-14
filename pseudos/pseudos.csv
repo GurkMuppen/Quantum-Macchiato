@@ -1,5 +1,6 @@
-species;weight;min_ecut;n_valance;path
-Li;6.941;50.0;4;Li.UPF
-Cu;63.546;45.0;6;Cu.UPF
-Cl;35.453;45.0;6;Cl.UPF
-O;15.999;47.0;4;O.UPF
+species;weight;ecutwfc;ecutrho;n_valance;path
+Li;6.941;50.0;323;4;Li.UPF
+Cu;63.546;45.0;236;6;Cu.UPF
+Cl;35.453;45.0;222;6;Cl.UPF
+O;15.999;47.0;323;4;O.UPF
+Na;22.990;66.0;323.0;4;Na.UPF
