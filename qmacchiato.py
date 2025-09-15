@@ -112,12 +112,21 @@ class path_object:
                     return float(line[33:-4].strip())
         raise Exception(f"NO ENERGY WAS FOUND IN {path.basepath}{path.filename}.out")
 
-def generate_command(cpus, program="pw.x", input_path="test.in", threads=1):
-    return (
+def generate_command(cpus, program="pw.x", input_path="test.in", threads=1, command_only=False):
+    if not command_only : return (
         "echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope && "
         f"export OMP_NUM_THREADS={threads} && "
         f"conda run -n qespresso mpirun -np {cpus} {program} -in {input_path}"
     )
+    return (f"conda run -n qespresso mpirun -np {cpus} {program} -in {input_path}")
+
+
+def commands_to_bashfile(command : str, path : str, file_mode="w", make_executable=True):
+    with open(path, file_mode) as file:
+        file.write(command)
+    print(path)
+    if make_executable : subprocess.run(["chmod", "+x", path], check=True)
+
 
 def run_logged_command(command, output_file="test.out", label=""):
     usagestart = time.time()
@@ -206,3 +215,6 @@ def simulate_from_template_logged(program="pw.x", basepath="./tmp/", filename="t
 
 def run_simulation(path_obj : path_object, program="pw.x", cpus=1):
     run_logged_command(generate_command(cpus, program=program, input_path=path_obj.basepath + f"{path_obj.filename}.in"), output_file=path_obj.basepath + f"{path_obj.filename}.out", label=f"{path_obj.filename}")
+
+    
+    
