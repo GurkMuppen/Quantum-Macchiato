@@ -112,21 +112,22 @@ class path_object:
                     return float(line[33:-4].strip())
         raise Exception(f"NO ENERGY WAS FOUND IN {path.basepath}{path.filename}.out")
 
-def generate_command(cpus, program="pw.x", input_path="test.in", threads=1, command_only=False):
+def generate_command(cpus, program="pw.x", input_path="test.in", threads=1, command_only=False, output_file=""):
     if not command_only : return (
         "echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope && "
         f"export OMP_NUM_THREADS={threads} && "
-        f"conda run -n qespresso mpirun -np {cpus} {program} -in {input_path}"
+        f"conda run -n qespresso --no-capture-output mpirun -np {cpus} {program} -in {input_path} {('> ' + output_file) if output_file else ''}"
     )
-    return (f"conda run -n qespresso mpirun -np {cpus} {program} -in {input_path}")
+    return (f"conda run -n qespresso --no-capture-output mpirun -np {cpus} {program} -in {input_path} {('> ' + output_file) if output_file else ''}")
 
 
 def commands_to_bashfile(command : str, path : str, file_mode="w", make_executable=True):
     with open(path, file_mode) as file:
         file.write(command)
     print(path)
-    if make_executable : subprocess.run(["chmod", "+x", path], check=True)
-
+    if make_executable : 
+        subprocess.run(["chmod", "+x", path], check=True)
+        print(f"Executable file created: To run simulation run: {path}")
 
 def run_logged_command(command, output_file="test.out", label=""):
     usagestart = time.time()
