@@ -12,7 +12,7 @@ def optimize_structure(current_structure: structure, basepath="./tmp/", max_poin
     for starting_celldm in starting_celldms:
         path = path_object(basepath=f"{basepath}opt/{starting_celldm}/", filename=f"{starting_celldm}", prefix=f"{starting_celldm}", template_path="./input_templates/standard.in")
         params.update({"celldm":starting_celldm})
-        path.input_file = path.render_input_file(params, current_structure)
+        path.render_input_file(params, current_structure)
 
         run_simulation(path, "pw.x", 4)
 
@@ -42,7 +42,6 @@ def optimize_structure(current_structure: structure, basepath="./tmp/", max_poin
     if graph_result :
         lattice_optimization_to_graph(points)
     print("Simulation did not converge")
-    
 
 def manual_lattice_optimization(basepath, max_points, convergence=0.001, starting_celldms=[6.0, 7.0]):
     slope_left = -np.inf

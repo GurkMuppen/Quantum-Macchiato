@@ -91,7 +91,10 @@ class path_object:
     """ External path to the template to be rendered """
 
     input_file : str
-    """ Local path to the rendered input file to be calculated"""
+    """ Local path to the rendered input file to be calculated """
+
+    output_file : str
+    """ Local path to the output file """
     
     def __init__(self, basepath : str, filename : str, prefix : str = "", template_path : str = ""):
         self.basepath = basepath
@@ -104,6 +107,7 @@ class path_object:
 
     def render_input_file(self, params : dict, structure : structure = None):
         self.input_file = render_template(structure=structure, basepath=self.basepath, filename=self.filename, prefix=self.prefix, params=params, template_path=self.template_path)
+        self.output_file = f"{self.basepath}{self.input_file}.out"
 
     def read_output_energy(path) :
         with open(f"{path.basepath}{path.filename}.out", "r") as f:
@@ -129,18 +133,16 @@ def commands_to_bashfile(command : str, path : str, file_mode="w", make_executab
         subprocess.run(["chmod", "+x", path], check=True)
         print(f"Executable file created: To run simulation run: {path}")
 
-def run_logged_command(command, output_file="test.out", label=""):
+def run_logged_command(command, label=""):
     usagestart = time.time()
-    with open(output_file, "w") as outfile:
-        subprocess.run(command, shell=True, check=True, stdout=outfile, stderr=subprocess.STDOUT)
+    subprocess.run(command, shell=True, check=True)
     usageend = time.time()
     runtime = usageend - usagestart
     print(f"Simulation {label} completed with a runtime of: {runtime:.2f} seconds")
     return runtime
 
-def run_command(command, output_file="test.out"):
-    with open(output_file, "w") as outfile:
-        subprocess.run(command, shell=True, check=True, stdout=outfile, stderr=subprocess.STDOUT)
+def run_command(command):
+    subprocess.run(command, shell=True, check=True)
 
 def render_template(structure : structure = None, basepath="./tmp/", filename="test", prefix="",params={}, template_path="./input_templates/test.in"):
     # Start with default params:
@@ -215,7 +217,7 @@ def simulate_from_template_logged(program="pw.x", basepath="./tmp/", filename="t
                     return float(line[33:-4].strip())
 
 def run_simulation(path_obj : path_object, program="pw.x", cpus=1):
-    run_logged_command(generate_command(cpus, program=program, input_path=path_obj.basepath + f"{path_obj.filename}.in"), output_file=path_obj.basepath + f"{path_obj.filename}.out", label=f"{path_obj.filename}")
+    run_logged_command(generate_command(cpus, program=program, input_path=path_obj.input_file, output_file=path_obj.output_file), output_file=path_obj.basepath + f"{path_obj.filename}.out", label=f"{path_obj.filename}")
 
     
     
