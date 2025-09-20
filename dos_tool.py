@@ -18,7 +18,7 @@ def run_dos_triad(structure : structure, path : path_object, globalparams: dict 
 
     path.filename = f"{path.prefix}_first"
     path.template_path = f"{templates}first.in"
-    path.input_file = path.render_input_file(tmp_params, structure)
+    path.render_input_file(tmp_params, structure)
 
     run_simulation(path, "pw.x", cpus)
 
@@ -28,7 +28,7 @@ def run_dos_triad(structure : structure, path : path_object, globalparams: dict 
 
     path.filename = f"{path.prefix}_second"
     path.template_path = f"{templates}second.in"
-    path.input_file = path.render_input_file(tmp_params, structure)
+    path.render_input_file(tmp_params, structure)
 
     run_simulation(path, "pw.x", cpus)
 
@@ -38,7 +38,7 @@ def run_dos_triad(structure : structure, path : path_object, globalparams: dict 
 
     path.filename = f"{path.prefix}_third"
     path.template_path = f"{templates}third.in"
-    path.input_file = path.render_input_file(tmp_params, structure)
+    path.render_input_file(tmp_params, structure)
 
     run_simulation(path, "dos.x", cpus)
 

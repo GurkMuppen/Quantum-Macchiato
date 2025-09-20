@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import numpy as np
 import jinja2 as j2
+import re
 from pseudo_tool import *
 
 testcmd = (
@@ -27,25 +28,49 @@ class atom_position:
 
     def __str__(self):
         return f"{self.atom} {self.x} {self.y} {self.z}"
+    
+class lattice_vector :
+    x: float
+    y: float
+    z: float
+
+    def __init__(self, x: float, y: float, z: float):
+        self.x = x
+        self.y = y
+        self.z = z
+        pass
+
+    def to_params(self):
+        return f"{self.x} {self.y} {self.z}"
 
 class structure:
     """A Quantum Espresso structure"""
     ibrav : int 
-    celldm : float
+    lattice_constant : float 
+    """Used as celldm in cubic structures, or as reference length with alat when using a custom cell shape."""
     species : pd.DataFrame
     positions : list[atom_position]
+    
+    lattice_vectors : list[lattice_vector]
+    """Optional way of describing non-cubic lattices"""
+    vector_unit = "alat"
+    """ Determines which unit lattice_vectors and positions are interpreted as \n 
+    vector_unit = {"alat", "bohr", "angstrom"}, default = "alat". """
+
 
     total_energy : float = np.inf # Simulated energy, is set after simulation
 
-    def __init__(self, positions : atom_position, celldm, ibrav=2):
+    def __init__(self, positions : atom_position, lattice_constant, ibrav=2, lattice_vectors=[], vector_unit="alat"):
         species = []
         for position in positions:
             if position.atom not in species:
                 species.append(position.atom)
         self.species = get_pseudo_data(species)
         self.positions = positions
-        self.celldm = celldm
+        self.lattice_constant = lattice_constant
         self.ibrav = ibrav
+        self.lattice_vectors = lattice_vectors
+        self.vector_unit = vector_unit
 
     def positions_to_string(self):
         output = []
@@ -62,10 +87,11 @@ class structure:
     def to_params(self):
         output = {
             "ibrav":self.ibrav,
-            "celldm":self.celldm,
+            "celldm":self.lattice_constant,
             "nat":len(self.positions),
             "ntyp":len(self.species),
             "nbnd":int(self.get_nbnd()) + 4, # 4 IF METAL, THIS HAS TO BE ADAPTED,
+            "vector_unit":self.vector_unit,
             "species":define_species(self.species),
             "positions": self.positions_to_string()
             }
@@ -73,7 +99,76 @@ class structure:
             output.update({"ibrav":self.ibrav})
         else:
             output.update({"ibrav":2})
+
+        if len(self.lattice_vectors) != 0:
+            output.update({
+                "CELL_PARAMETERS":self.cell_parameters()
+            })
         return output
+    
+    def cell_parameters(self):
+        output = f"""CELL_PARAMETERS ({self.vector_unit})
+        {self.lattice_vectors[0].to_params()}
+        {self.lattice_vectors[1].to_params()}
+        {self.lattice_vectors[2].to_params()}"""
+        return output
+
+
+def structure_from_output_file(path : str, filetype = "vc-relax"):
+    """ Import structure parameters from previously simulated structure \n
+    Implemented calculations: 'vc-relax'"""   
+
+    reading_phase = None
+    isFinalCoordinates = False
+    total_energy = np.inf
+    lattice_constant = np.inf
+    cell_parameter_lines = []
+    atomic_positions_lines = []
+
+    with open(path, mode="r") as file:
+
+        for line in file:
+            
+            if "!    total energy              =" in line:
+                total_energy = float(line[33:-4].strip())
+                continue
+
+            if "Begin final coordinates" in line:
+                isFinalCoordinates = True
+
+            if "CELL_PARAMETERS" in line and isFinalCoordinates:
+                match = re.search(r"alat=\s*([0-9]+\.[0-9]+)", line)
+                if match: lattice_constant = float(match.group(1))
+                reading_phase = "cell_parameters"; 
+                continue
+
+            if "ATOMIC_POSITIONS" in line and isFinalCoordinates:
+                reading_phase = "atomic_positions";
+                continue
+
+            if "End final coordinates" in line and isFinalCoordinates: 
+                reading_phase = None;
+                isFinalCoordinates = False
+                break
+
+            match reading_phase:
+                case "cell_parameters":
+                    if (len(cell_parameter_lines) < 3):
+                        cell_parameter_lines.append(line)
+                case "atomic_positions":
+                    atomic_positions_lines.append(line)
+        
+    lattice_vectors = []
+    for cell_parameter in cell_parameter_lines:
+        vector = [float(x) for x in cell_parameter.split()]
+        lattice_vectors.append(lattice_vector(vector[0], vector[1], vector[2]))
+    positions = []
+    for atomic_position in atomic_positions_lines :
+        values : list = atomic_position.split()
+        positions.append(atom_position(values[0], float(values[1]), float(values[2]), float(values[3])))
+    imported_structure = structure(positions, lattice_constant, 0, lattice_vectors)
+    return imported_structure
+        
 
 class path_object:
     """ A container for all paths used by Quantum Macchiato functions """
@@ -107,7 +202,7 @@ class path_object:
 
     def render_input_file(self, params : dict, structure : structure = None):
         self.input_file = render_template(structure=structure, basepath=self.basepath, filename=self.filename, prefix=self.prefix, params=params, template_path=self.template_path)
-        self.output_file = f"{self.basepath}{self.input_file}.out"
+        self.output_file = f"{self.basepath}{self.filename}.out"
 
     def read_output_energy(path) :
         with open(f"{path.basepath}{path.filename}.out", "r") as f:
@@ -217,7 +312,7 @@ def simulate_from_template_logged(program="pw.x", basepath="./tmp/", filename="t
                     return float(line[33:-4].strip())
 
 def run_simulation(path_obj : path_object, program="pw.x", cpus=1):
-    run_logged_command(generate_command(cpus, program=program, input_path=path_obj.input_file, output_file=path_obj.output_file), output_file=path_obj.basepath + f"{path_obj.filename}.out", label=f"{path_obj.filename}")
+    run_logged_command(generate_command(cpus, program=program, input_path=path_obj.input_file, output_file=path_obj.output_file), label=f"{path_obj.filename}")
 
     
     
